@@ -56,6 +56,18 @@ const tools: McpToolExport['tools'] = [
       required: ['cod_id'],
     },
   },
+  {
+    name: 'get_cif',
+    description:
+      'Fetch the full CIF (Crystallographic Information File) for a COD structure by its numeric COD ID — the actual machine-readable structure: symmetry operations and the atom sites (element, fractional x/y/z coordinates, occupancy). Use after search_structures/get_structure when you need the real atomic structure, not just the metadata/link. Returns the CIF text plus a parsed summary (formula, space group, cell, atom count). Keyless.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        cod_id: { type: 'string', description: 'COD numeric structure id, e.g. "1009000".' },
+      },
+      required: ['cod_id'],
+    },
+  },
 ];
 
 interface CodRow {
@@ -85,6 +97,8 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
         return await searchStructures(args);
       case 'get_structure':
         return await getStructure(args);
+      case 'get_cif':
+        return await getCif(args);
       default:
         return { error: `Unknown tool: ${name}` };
     }
@@ -172,6 +186,44 @@ async function getStructure(args: Record<string, unknown>): Promise<unknown> {
     year: row.year ?? null,
     doi: row.doi ?? null,
     cif_url: `${BASE}/${encodeURIComponent(codId)}.cif`,
+  };
+}
+
+async function getCif(args: Record<string, unknown>): Promise<unknown> {
+  const codId = typeof args.cod_id === 'string' ? args.cod_id.trim().replace(/[^0-9]/g, '') : '';
+  if (!codId) {
+    return { error: 'Required argument "cod_id" is missing. Pass a COD numeric id like "1009000".' };
+  }
+  const url = `${BASE}/${codId}.cif`;
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'chemical/x-cif, text/plain' } });
+  if (res.status === 404) return { error: 'structure not found', cod_id: codId };
+  if (!res.ok) throw new Error(`COD CIF: ${res.status}`);
+  const cif = await res.text();
+
+  // Lightweight parse of the headline CIF tags + atom-site count.
+  const tag = (name: string): string | null => {
+    const m = new RegExp(`^${name}\\s+(.+)$`, 'm').exec(cif);
+    return m ? m[1].trim().replace(/^['"]|['"]$/g, '') : null;
+  };
+  const atomSiteCount = (cif.match(/^[A-Za-z][A-Za-z0-9]?\d*\s+[A-Za-z]/gm) ?? []).length; // rough
+  const summary = {
+    formula: tag('_chemical_formula_sum') ?? tag('_chemical_formula_structural'),
+    name: tag('_chemical_name_systematic') ?? tag('_chemical_name_mineral'),
+    space_group: tag('_symmetry_space_group_name_H-M') ?? tag('_space_group_name_H-M_alt'),
+    cell: {
+      a: tag('_cell_length_a'), b: tag('_cell_length_b'), c: tag('_cell_length_c'),
+      alpha: tag('_cell_angle_alpha'), beta: tag('_cell_angle_beta'), gamma: tag('_cell_angle_gamma'),
+    },
+    atom_site_lines: (cif.match(/_atom_site_/g) ?? []).length,
+  };
+  // CIF files are small (typically a few KB); cap to keep responses sane.
+  const MAX = 40000;
+  return {
+    cod_id: codId,
+    cif_url: url,
+    summary,
+    truncated: cif.length > MAX,
+    cif: cif.length > MAX ? cif.slice(0, MAX) : cif,
   };
 }
 
