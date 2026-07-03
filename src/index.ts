@@ -126,7 +126,22 @@ async function searchStructures(args: Record<string, unknown>): Promise<unknown>
   if (mineral) params.set('mineral', mineral);
   params.set('format', 'json');
 
-  const rows = await codGet(params);
+  let rows = await codGet(params);
+
+  // COD's `mineral` field is sparsely populated and `formula` needs exact Hill
+  // formatting, so LLMs passing mineral:"quartz" / formula:"NaCl" get zero rows
+  // even though the free-text search finds them (~105 distinct agents hit this
+  // in 2 days). When a field-scoped search comes back empty, retry the same term
+  // as free text — a relevant result beats a misleading empty.
+  let fellBack = false;
+  if (rows.length === 0 && !query && (mineral || formula)) {
+    const fb = new URLSearchParams();
+    fb.set('text', mineral || formula);
+    fb.set('format', 'json');
+    rows = await codGet(fb);
+    fellBack = rows.length > 0;
+  }
+
   const structures = rows.slice(0, limit).map((r) => {
     const file = (r.file ?? '').toString();
     return {
@@ -141,7 +156,11 @@ async function searchStructures(args: Record<string, unknown>): Promise<unknown>
     };
   });
 
-  return { count: structures.length, structures };
+  return {
+    count: structures.length,
+    structures,
+    ...(fellBack ? { note: `No exact ${mineral ? 'mineral' : 'formula'}-field match in COD; showing free-text matches for "${mineral || formula}".` } : {}),
+  };
 }
 
 async function getStructure(args: Record<string, unknown>): Promise<unknown> {
