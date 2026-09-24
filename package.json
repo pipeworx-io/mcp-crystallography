@@ -1,20 +1,32 @@
 {
   "name": "@pipeworx/mcp-crystallography",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Crystallography Open Database (COD) MCP.",
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "bin": {
+    "mcp-crystallography": "bin/cli.js"
+  },
   "keywords": ["mcp", "mcp-server", "model-context-protocol", "pipeworx", "crystallography"],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pipeworx-io/mcp-crystallography"
+    "url": "git+https://github.com/pipeworx-io/mcp-crystallography.git"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "tsx": "^4.19.0"
+  },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.9.3",
+    "@cloudflare/workers-types": "^4.20260405.1"
+  },
+  "pipeworx": {
+    "sourceHash": "v1-2c3e9c31cf176e11d5f0e890c7c87d90dcc11a19851d897b7416f0cf280e0cc9",
+    "sourceCommit": "60f04b68c347e970c6be94a53439d1364061fc06"
   }
 }
