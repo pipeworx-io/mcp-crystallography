@@ -1,6 +1,6 @@
 {
   "name": "@pipeworx/mcp-crystallography",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Crystallography Open Database (COD) MCP.",
   "type": "module",
   "main": "src/index.ts",
@@ -26,7 +26,7 @@
     "@cloudflare/workers-types": "^4.20260405.1"
   },
   "pipeworx": {
-    "sourceHash": "v1-2c3e9c31cf176e11d5f0e890c7c87d90dcc11a19851d897b7416f0cf280e0cc9",
-    "sourceCommit": "60f04b68c347e970c6be94a53439d1364061fc06"
+    "sourceHash": "v1-616c1dcad60d8d8940d682be966da190540cf5d72247a2afa51dd34d96153994",
+    "sourceCommit": "5b29c2b0c11e1fcd954969a245b474e6e9475116"
   }
 }
