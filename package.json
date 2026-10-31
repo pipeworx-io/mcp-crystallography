@@ -1,6 +1,6 @@
 {
   "name": "@pipeworx/mcp-crystallography",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Crystallography Open Database (COD) MCP.",
   "type": "module",
   "main": "lib/index.js",
@@ -27,7 +27,7 @@
     "mode": "gateway",
     "slug": "crystallography",
     "gatewaySlug": "crystallography",
-    "sourceHash": "v1-add1a405fa12611b1412488b6a3a1a5c76b0f1ab414b1d69010db9450157a4d0",
-    "sourceCommit": "0b3faaa4d85299a961dd86dea75a0f0e1dad280c"
+    "sourceHash": "v1-518a8879ac629ccec4ee40f0a533bfd3e668b4ba255c464bf8386bf0e41f9149",
+    "sourceCommit": "8cc978183948532674e797c429305c9d8ab2a1c3"
   }
 }
